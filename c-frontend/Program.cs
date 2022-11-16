@@ -9,7 +9,7 @@ namespace c_frontend
     public static string configPath = "config.txt";
     static void Main(string[] args)
     {
-      Client.CheckConfig(configPath);
+      Client.Connect(configPath);
     }
   }
 }
