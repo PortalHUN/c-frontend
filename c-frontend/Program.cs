@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Threading;
 using RestSharp;
 
 namespace c_frontend
@@ -9,7 +9,7 @@ namespace c_frontend
     public static string configPath = "config.txt";
     static void Main(string[] args)
     {
-      Config.CheckConfig(configPath);
+      Client.CheckConfig(configPath);
     }
   }
 }
