@@ -182,7 +182,7 @@ namespace c_frontend
       RestClient client = new RestClient(APIString);
       RestRequest req = new RestRequest("/");
       CancellationToken token;
-      Test res = new Test();
+      var res = new Test();
       try
       {
         res = client.GetAsync<Test>(req, token).Result;
