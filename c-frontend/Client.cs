@@ -1,8 +1,12 @@
 ﻿using Newtonsoft.Json;
 using RestSharp;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Threading;
+using c_frontend;
 
 namespace c_frontend
 {
@@ -14,18 +18,20 @@ namespace c_frontend
     /// For now it is checking existing config, if it does not exists yet, it asks the user and creates one.
     /// </summary>
 
+    public static RestClient client { get; private set; }
     private static string HTTPS { get; set; }
     private static string IP { get; set; }
     private static string PORT { get; set; }
     private static string APIString { get; set; }
     private static string ConfigPath { get; set; }
 
+
     public static void Connect(string configPath)
     {
       /// <summary>
       /// Config file handling
       /// </summary>
- 
+
       ConfigPath = configPath;
       if (!File.Exists(configPath)) AskServer();
       else ReadConnection();
@@ -37,7 +43,7 @@ namespace c_frontend
       /// Deserializes the config.txt and uses to test and save the connection
       /// between the server.
       /// </summary>
-      
+
       string configContent = File.ReadAllText(ConfigPath);
       Serializer json = JsonConvert.DeserializeObject<Serializer>(configContent);
       HTTPS = json.https;
@@ -57,7 +63,7 @@ namespace c_frontend
       }
     }
 
-    public static void SaveConnection()
+    private static void SaveConnection()
     {
       /// <summary>
       /// Saving connection to a file.
@@ -65,7 +71,7 @@ namespace c_frontend
 
 
       Serializer s = new Serializer() { ip = IP, https = HTTPS, port = PORT };
-      var json = JsonConvert.SerializeObject(s);
+      string json = JsonConvert.SerializeObject(s);
       File.WriteAllText(ConfigPath, json);
     }
 
@@ -76,10 +82,10 @@ namespace c_frontend
       /// </summary>
 
       Console.Clear();
-      GetHttps();
-      GetIP();
-      GetPort();
-      if (TestConnection() == 1) 
+      InpHttps();
+      InpIP();
+      InpPort();
+      if (TestConnection() == 1)
       {
         Console.WriteLine("Connected to the server...");
         Thread.Sleep(500);
@@ -93,7 +99,7 @@ namespace c_frontend
       SaveConnection();
     }
 
-    private static void GetHttps()
+    private static void InpHttps()
     {
       /// <summary>
       /// Getting HTTPS
@@ -106,11 +112,11 @@ namespace c_frontend
       http = http.ToLower();
       if (http == "http") HTTPS = "http://";
       else if (http == "https") HTTPS = "https://";
-      else GetHttps();
+      else InpHttps();
       RefreshAPIString();
     }
 
-    private static void GetIP()
+    private static void InpIP()
     {
       /// <summary>
       /// Getting IP Address
@@ -122,7 +128,7 @@ namespace c_frontend
       if (ip == "") ip = "127.0.0.1";
       ip = ip.ToLower();
       string[] tmp = ip.Split('.');
-      if (tmp.Length != 4) GetIP();
+      if (tmp.Length != 4) InpIP();
       else try
         {
           Convert.ToInt32(tmp[0]);
@@ -134,12 +140,12 @@ namespace c_frontend
         }
         catch (Exception)
         {
-          GetIP();
+          InpIP();
         }
       RefreshAPIString();
     }
 
-    private static void GetPort()
+    private static void InpPort()
     {
       /// <summary>
       /// Getting PORT
@@ -157,18 +163,19 @@ namespace c_frontend
       }
       catch (Exception)
       {
-        GetPort();
+        InpPort();
       }
       RefreshAPIString();
     }
 
-    public static void RefreshAPIString()
+    private static void RefreshAPIString()
     {
       /// <summary>
       /// Refreshing API String for easier usage
       /// </summary>
-      
+
       APIString = $"{HTTPS}{IP}:{PORT}";
+      client = new RestClient(APIString);
     }
 
     public static int TestConnection()
@@ -178,29 +185,81 @@ namespace c_frontend
       /// </summary>
 
       Console.Clear();
-      if (APIString == null || APIString == "") return 0;
-      RestClient client = new RestClient(APIString);
+      if (APIString == null || APIString == "") return -1;
       RestRequest req = new RestRequest("/");
       CancellationToken token;
-      Test res = new Test();
       try
       {
-        res = client.GetAsync<Test>(req, token).Result;
+        RestResponse res = client.GetAsync(req, token).Result;
+        Debug.WriteLine($"Connection testing: '/' {res.StatusCode.GetHashCode()} {res.Content}");
+        if (res.StatusCode == HttpStatusCode.OK) return 1;
+        else return -1;
       } catch
       {
         return -1;
       }
-      
-      if (res.code == 957 && res.message == "OK")
-        return 1;
-      else
-        return -1;
+
+
+    }
+
+    public static FResponse Request(string serverPath, Method method=Method.Get, object payload = null, List<KeyValuePair> headers = null, List<KeyValuePair> queryParams = null)
+    {
+      //Because we use FResponse class you need to deserialize the content after using this Function
+
+      if (serverPath == "" || payload == null) return new FResponse(400, "Missing Syntax.");
+      RestRequest req = new RestRequest(serverPath, method);
+      CancellationToken token;
+
+      //Adding headers to the request
+      if(headers != null)
+        for (int i = 0; i < headers.Count; i++)
+          req.AddHeader(headers[i].name, headers[i].value);
+
+      //Adding Query Params
+      if(queryParams != null)
+        for (int i = 0; i < queryParams.Count; i++)
+          req.AddQueryParameter(queryParams[i].name, queryParams[i].value);
+
+      //Adding JSON Body
+      req.AddJsonBody(payload);
+
+      try
+      {
+        RestResponse res = client.ExecuteAsync(req, token).Result;
+        Debug.WriteLine($"{method.ToString().ToUpper()}: '{serverPath}' '{res.StatusCode.GetHashCode()}' {res.Content}");
+        return new FResponse(res.StatusCode.GetHashCode(), res.Content);
+      }
+      catch(Exception ex)
+      {
+        Debug.WriteLine(ex.ToString());
+        return new FResponse(500, "Couldn't react server.");
+      }
     }
   }
-  public class Test
+
+  public class KeyValuePair
   {
-    public int code { get; set; }
-    public string message { get; set; }
+    public string name;
+    public string value;
+
+    public KeyValuePair(string name, string value)
+    {
+      this.name = name;
+      this.value = value;
+    }
+  }
+
+  public class FResponse
+  {
+    //Frontend Response
+    public int code;
+    public string content;
+
+    public FResponse(int code, string message)
+    {
+      this.code = code;
+      this.content = message;
+    }
   }
 
   public class Serializer
