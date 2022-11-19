@@ -188,6 +188,7 @@ namespace c_frontend
       if (APIString == null || APIString == "") return -1;
       RestRequest req = new RestRequest("/");
       CancellationToken token;
+      Test res = new Test();
       try
       {
         RestResponse res = client.GetAsync(req, token).Result;
