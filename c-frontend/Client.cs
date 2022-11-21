@@ -188,11 +188,10 @@ namespace c_frontend
       if (APIString == null || APIString == "") return -1;
       RestRequest req = new RestRequest("/");
       CancellationToken token;
-      Test res = new Test();
       try
       {
         RestResponse res = client.GetAsync(req, token).Result;
-        Debug.WriteLine($"Connection testing: '/' {res.StatusCode.GetHashCode()} {res.Content}");
+        Debug.WriteLine($"Connection testing: '/' '{res.StatusCode.GetHashCode()}' {res.Content}");
         if (res.StatusCode == HttpStatusCode.OK) return 1;
         else return -1;
       } catch

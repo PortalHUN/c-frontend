@@ -15,7 +15,7 @@ namespace c_frontend.Menu
       Console.WriteLine("Username: ");
       string uname = Console.ReadLine().Trim();
       if (uname.Length > 2 && uname.Length < 17) return uname;
-      else return PromptPassword("Must:\n -Between 3 and 16 characters\n");
+      else return PromptUsername("Must:\n -Between 3 and 16 characters\n");
     }
 
     public static string PromptEmail(string help = null)
@@ -25,7 +25,7 @@ namespace c_frontend.Menu
       Console.WriteLine("Email: ");
       string email = Console.ReadLine().Trim();
       if (email.Contains('@') && email.Contains('.')) return email;
-      else return PromptPassword("Form:\n -example@example.com\n"); 
+      else return PromptEmail("Form:\n -example@example.com\n"); 
 
     }
 
