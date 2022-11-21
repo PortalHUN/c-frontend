@@ -28,26 +28,25 @@ namespace c_frontend.Controllers
     public static void Registration()
     {
       //Prompting for informations
-      user.SetUsername(Prompts.PromptUsername());
-      string Email = Prompts.PromptEmail();
-      string Password = Prompts.PromptPassword();
-      Debug.WriteLine($"Username: {user.Username}, Email: {Email}");
+      string Username = (Input.Username("Whats your Username?"));
+      string Email = Input.Email("Whats your Email?");
+      string Password = Input.Password("Whats your Password?");
+      Debug.WriteLine($"Username: {Username}, Email: {Email}");
 
       //request
-      FResponse res = Client.Request("/auth/register", Method.Post, new {user.Username, Email, Password});
-      if(res.code == 200)
+      FResponse res = Client.Request("/auth/register", Method.Post, new {Username, Email, Password});
+      Output.SpacedWrite(res.content);
+      Debug.WriteLine($"Registration(): {res.content}");
+      Thread.Sleep(1000);
+      if (res.code == 200)
       {
-        Console.WriteLine(res.content);
-        Debug.WriteLine($"UserController.Registration(): {res.content}");
-        Thread.Sleep(1000);
+        user.SetUsername(Username);
       }
       else
       {
-        Console.WriteLine(res.content);
-        Debug.WriteLine($"PostUser(): {res.content}");
-        Thread.Sleep(1000);
         Registration();
       }
+      
     }
 
     

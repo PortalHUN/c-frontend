@@ -79,7 +79,8 @@
   <ItemGroup>
     <Compile Include="Controllers\UserController.cs" />
     <Compile Include="Menu\Input.cs" />
-    <Compile Include="Menu\Menu.cs" />
+    <Compile Include="Menu\Menus.cs" />
+    <Compile Include="Menu\Output.cs" />
     <Compile Include="Models\ActiveUser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
