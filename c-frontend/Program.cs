@@ -13,26 +13,7 @@ namespace c_frontend
     public static string userPath = "user.txt";
     static void Main(string[] args)
     {
-      Console.WindowWidth = 120;
-      Console.WindowHeight = 33;
-
-      MenuFramework MainMenu = new MenuFramework(new List<dynamic>()
-      {
-        new MenuItemFunction("Function hello!", Hello),
-        new MenuItemChoose("Class", new List<MenuChoice>()
-        {
-          new MenuChoice("Mage", Hello, ""),
-          new MenuChoice("Scout", Hello)
-        }),
-        new MenuItemInput("Username")
-      }
-      , "Main Menu"); 
-      MainMenu.OpenMenu();
-      Console.ReadKey();
-    }
-    public static void Hello()
-    {
-      Console.WriteLine($"Hello!");
+      Client.Connect(configPath);
     }
   }
 }

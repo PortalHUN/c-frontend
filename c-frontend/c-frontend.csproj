@@ -78,8 +78,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\UserController.cs" />
-    <Compile Include="Menu\MenuFramework.cs" />
-    <Compile Include="Menu\Prompts.cs" />
+    <Compile Include="Menu\Input.cs" />
+    <Compile Include="Menu\Menu.cs" />
     <Compile Include="Models\ActiveUser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
