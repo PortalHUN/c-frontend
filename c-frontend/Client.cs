@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading;
 using c_frontend;
 using c_frontend.Menu;
+using Newtonsoft.Json.Linq;
 
 namespace c_frontend
 {
@@ -21,120 +22,114 @@ namespace c_frontend
     /// </summary>
 
     public static RestClient client { get; private set; }
+    public static bool connected { get; private set; }
     private static string HTTPS { get; set; }
     private static string IP { get; set; }
     private static string PORT { get; set; }
-    private static string APIString { get; set; }
 
 
     public static void Connect()
     {
-      //Remodel UserInterface of Connect();
-      //Need to read connection with a public function if needed.
-      //Remove TestConnection function
-      //Save Connection prompt if the user want to save it.
-      //Remove and replace RefreshAPIString.
-      //Dont touch request syntax otherwise it may not work anymore.
-      //bool connected variable.
+      //Remodel UserInterface of Connect(); ✓
+      //Need to read connection with a public function if needed. ✓
+      //Remove TestConnection function ✓
+      //Save Connection prompt if the user want to save it. ✓
+      //Remove and replace RefreshAPIString. ✓
+      //Dont touch request syntax otherwise it may not work anymore. ✓
+      //bool connected variable. ✓
 
-
-      
-
-      /*if (!File.Exists(configPath)) AskServer();
-      bool b = Input.YesNoQuestion("Do you want to connect to a server?", true);
-      if (b) AskServer();
-      else */
-
-      /*if (!File.Exists(configPath)) AskServer();
-      else ReadConnection();*/
-    }
-
-    private static void ReadConnection()
-    {
-      /// <summary>
-      /// Deserializes the config.txt and uses to test and save the connection
-      /// between the server.
-      /// </summary>
-      /*string configContent = File.ReadAllText(ConfigPath);
-      Serializer json = JsonConvert.DeserializeObject<Serializer>(configContent);
-      HTTPS = json.https;
-      IP = json.ip;
-      PORT = json.port;
-      RefreshAPIString();
-
-      FResponse test = TestConnection();
-      if (test.code == 200)
+      string val = Input.Choice(new List<string>() 
       {
-        Console.WriteLine("Connected to the server...");
-        Thread.Sleep(500);
+        "Read existing connection",
+        "Use new connection",
+      });
+
+      if(val == "Read existing connection")
+      {
+        ReadConnection();
       }
-      else
+      else if(val == "Use new connection")
       {
-        Console.WriteLine($"{test.code}: {test.content} (Connect to a correct server.)");
+        Configure();
+      }
+
+
+      void ReadConnection()
+      {
+        Console.Clear();
+        if (!File.Exists(configPath))
+        {
+          Console.Clear();
+          Output.SpacedWrite("Configuration file not found.\n | Returning to the main menu...");
+          Thread.Sleep(1000);
+          Menus.MainMenu();
+          return;
+        }
+        
+        Serializer json = JsonConvert.DeserializeObject<Serializer>(File.ReadAllText(configPath));
+        HTTPS = json.https;
+        IP = json.ip;
+        PORT = json.port;
+        client = new RestClient($"{HTTPS}{IP}:{PORT}");
+        FResponse res = Request("/", Method.Get);
+        if (res.code != 200)
+        {
+          Output.SpacedWrite($"{res.code} - {res.content}");
+          bool wrong = Input.YesNoQuestion("Do you want to reconfigure?", true);
+          if (wrong) Configure();
+          else
+          {
+            Console.Clear();
+            Output.SpacedWrite("Returning to the main menu...");
+            Thread.Sleep(1000);
+            Menus.MainMenu();
+          }
+          return;
+        }
+        connected = true;
+        Console.Clear();
+        Output.SpacedWrite("Successfully connected to the server.\n | Returning to the main menu...");
         Thread.Sleep(1000);
-        AskServer();
-      }*/
-    }
-
-    private static void SaveConnection()
-    {
-      /// <summary>
-      /// Saving connection to a file.
-      /// </summary>
-
-
-      Serializer s = new Serializer() { ip = IP, https = HTTPS, port = PORT };
-      string json = JsonConvert.SerializeObject(s);
-      File.WriteAllText(configPath, json);
-    }
-
-    private static void AskServer()
-    {
-      /// <summary>
-      /// Handling the process of asking the user about the server.
-      /// </summary>
-
-
-      Console.Clear();
-      HTTPS = Input.Http("Server connection: HTTP/HTTPS", "http")+"://";
-      IP = Input.IP("Server connection: IP", "127.0.0.1");
-      PORT = Convert.ToString(Input.Number("Server connection: Port"));
-      RefreshAPIString();
-      FResponse test = TestConnection();
-      if (test.code == 200)
-      {
-        Console.WriteLine("Connected to the server...");
-        Thread.Sleep(500);
+        Menus.MainMenu();
       }
-      else
+
+      void Configure()
       {
-        Console.WriteLine($"{test.code}: {test.content}");
-        Thread.Sleep(1000);
-        AskServer();
+        Console.Clear();
+        HTTPS = Input.Http("Server connection: HTTP/HTTPS", "http") + "://";
+        IP = Input.IP("Server connection: IP", "127.0.0.1");
+        PORT = Convert.ToString(Input.Number("Server connection: Port"));
+        client = new RestClient($"{HTTPS}{IP}:{PORT}");
+        FResponse res = Request("/", Method.Get);
+        if (res.code != 200) 
+        {
+          Output.SpacedWrite($"No server connection.");
+          bool wrong = Input.YesNoQuestion("Do you want to reconfigure?", true);
+          if (wrong) Configure();
+          else
+          {
+            Console.Clear();
+            Output.SpacedWrite("Returning to the main menu...");
+            Thread.Sleep(1000);
+            Menus.MainMenu();
+          }
+          return;
+        }
+        connected = true;
+        bool save = Input.YesNoQuestion("Do you want to save this configuration?", true);
+        if (save) SaveConfiguration();
+        else Menus.MainMenu();
       }
-      SaveConnection();
-    }
 
-    private static void RefreshAPIString()
-    {
-      /// <summary>
-      /// Refreshing API String for easier usage
-      /// </summary>
-
-      APIString = $"{HTTPS}{IP}:{PORT}";
-      client = new RestClient(APIString);
-    }
-
-    public static FResponse TestConnection()
-    {
-      /// <summary>
-      /// Testing Connection.
-      /// </summary>
-
-      Console.Clear();
-      FResponse res = Request("/", Method.Get);
-      return res;
-
+      void SaveConfiguration()
+      {
+        Serializer s = new Serializer() { ip = IP, https = HTTPS, port = PORT };
+        string json = JsonConvert.SerializeObject(s);
+        File.WriteAllText(configPath, json);
+        Console.Clear();
+        Output.SpacedWrite("Successfully saved the server.\n | Returning to the main menu...");
+        Menus.MainMenu();
+      }
     }
 
     public static FResponse Request(string serverPath, Method method=Method.Get, object payload = null, List<KeyValuePair> headers = null, List<KeyValuePair> queryParams = null)

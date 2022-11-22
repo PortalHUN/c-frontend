@@ -20,7 +20,6 @@ namespace c_frontend.Menu
         $" | "
         );
       string val = Console.ReadLine().Trim() ;
-			Console.Write('\n');
 			Debug.WriteLine($"'{text}': {val}");
 			return val;
 		}
@@ -36,7 +35,6 @@ namespace c_frontend.Menu
       try
 			{
 				int val = Convert.ToInt32(Console.ReadLine().Trim());
-        Console.Write('\n');
         Debug.WriteLine($"'{text}': {val}");
 				return val;
 			}
@@ -56,7 +54,6 @@ namespace c_frontend.Menu
         $" | "
         );
       string val = Console.ReadLine().Trim().ToLower();
-      Console.Write('\n');
       if (val == "" && def!=null) val = def;
 			if (val == "http" || val == "https")
 			{
@@ -81,7 +78,6 @@ namespace c_frontend.Menu
       try
 			{
 				string val = Console.ReadLine().Trim();
-        Console.Write('\n');
         if (val == "" && def != null) val = def;
 				string[] tmp = val.Split('.');
 				Convert.ToInt32(tmp[0]);
@@ -107,7 +103,6 @@ namespace c_frontend.Menu
         $" | "
         );
       string val = Console.ReadLine().Trim();
-      //Console.Write('\n');
       if (val.Length < 3 || val.Length > 25)
 			{
         Debug.WriteLine($"'{text}': Wrong format.");
@@ -129,7 +124,6 @@ namespace c_frontend.Menu
         $" | "
         );
       string val = Console.ReadLine().Trim();
-      //Console.Write('\n');
       if (!val.Contains('@') && !val.Contains('.'))
 			{
 				Debug.WriteLine($"'{text}': Wrong format.");
