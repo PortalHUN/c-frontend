@@ -239,5 +239,6 @@ namespace c_frontend.Menu
       else if (input == "no" || input == "n") val = false;
       return val;
     }
+
   }
 }

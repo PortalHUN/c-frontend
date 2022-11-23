@@ -39,14 +39,9 @@ namespace c_frontend.Controllers
       Debug.WriteLine($"Registration(): {res.content}");
       Thread.Sleep(1000);
       if (res.code == 200)
-      {
         user.SetUsername(Username);
-      }
       else
-      {
         Registration();
-      }
-      
     }
 
     

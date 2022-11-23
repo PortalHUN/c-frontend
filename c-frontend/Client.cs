@@ -30,28 +30,15 @@ namespace c_frontend
 
     public static void Connect()
     {
-      //Remodel UserInterface of Connect(); ✓
-      //Need to read connection with a public function if needed. ✓
-      //Remove TestConnection function ✓
-      //Save Connection prompt if the user want to save it. ✓
-      //Remove and replace RefreshAPIString. ✓
-      //Dont touch request syntax otherwise it may not work anymore. ✓
-      //bool connected variable. ✓
-
-      string val = Input.Choice(new List<string>() 
+      List<string> points = new List<string>()
       {
         "Read existing connection",
         "Use new connection",
-      });
+      };
+      string val = Input.Choice(points);
 
-      if(val == "Read existing connection")
-      {
-        ReadConnection();
-      }
-      else if(val == "Use new connection")
-      {
-        Configure();
-      }
+      if(val == points[0]) ReadConnection();
+      else if(val == points[1]) Configure();
 
 
       void ReadConnection()
