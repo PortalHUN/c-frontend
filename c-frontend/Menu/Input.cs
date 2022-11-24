@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace c_frontend.Menu
@@ -138,10 +139,11 @@ namespace c_frontend.Menu
 
     public static string Password(string text, bool wrong = false)
 		{
-      Console.Write(
+      Regex rx = new Regex("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$");
+      Console.Write(  
 				$" | \n" +
         $" | [Password] {text}\n" +
-        $"{(wrong?" | Must be atleast 8 characters long.\n":"")}" +
+        $"{(wrong? " | Must have\n |  atleast 8 characters\n |  one number\n |  upper and lowercase letter\n |  one special character (#?!@$%^&*-)\n" : "")}" +
         $" | "
 				);
       StringBuilder val = new StringBuilder();
@@ -165,7 +167,7 @@ namespace c_frontend.Menu
           val.Append(passwordChar.ToString());
       }
 			Console.Write('\n');
-			if (val.Length < 8)
+			if (!rx.IsMatch(val.ToString()))
 			{
 				Debug.WriteLine($"'{text}': Wrong format.");
 				return Password(text, true);
