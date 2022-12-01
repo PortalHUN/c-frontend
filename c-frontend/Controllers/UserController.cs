@@ -11,19 +11,40 @@ namespace c_frontend.Controllers
 {
   internal static class UserController
   {
+    public static string userPath = "user.u";
     private static ActiveUser user = new ActiveUser();
 
     //User Reading and Writing in file
-    public static void ReadUser(string userPath)
+    public static void ReadUser()
     {
-      if (!File.Exists(userPath)) Console.WriteLine();
+      if (!File.Exists(userPath))
+			{
+        Output.SpacedWrite("User file not found!");
+        Thread.Sleep(1000);
+        Menus.MainMenu();
+        return;
+      }
+
+      UserSerializer json = JsonConvert.DeserializeObject<UserSerializer>(File.ReadAllText(userPath));
+      user.SetID(json.ID);
+      user.SetUsername(json.Username);
+      user.SetRefreshToken(json.RefreshToken);
+
+      Output.SpacedWrite("User loaded!");
+      Thread.Sleep(1000);
+      Menus.MainMenu();
     }
 
     public static void SaveUser(string userPath)
     {
-      string json = JsonConvert.SerializeObject(new {user.ID, user.Username, user.RefreshToken });
+      string json = JsonConvert.SerializeObject(new UserSerializer() {ID=user.ID, Username= user.Username, RefreshToken= user.RefreshToken });
       File.WriteAllText(userPath, json);
     }
+
+    public static string GetAccessToken()
+		{
+      return user.AccessToken;
+		}
 
     public static void Registration()
     {
@@ -44,8 +65,18 @@ namespace c_frontend.Controllers
         Registration();
     }
 
+    public static void Login()
+		{
+      return;
+		}
+
     
   }
 
-  
+  public class UserSerializer
+	{
+		public int ID { get; set; }
+		public string Username { get; set; }
+		public string RefreshToken { get; set; }
+	}
 }

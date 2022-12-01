@@ -21,6 +21,11 @@ namespace c_frontend.Models
       RefreshToken = null;
     }
 
+    public void SetRefreshToken(string str)
+		{
+      if (RefreshToken == null) RefreshToken = str;
+		}
+
     public void SetUsername(string str)
     {
       if (Username == null) Username = str;

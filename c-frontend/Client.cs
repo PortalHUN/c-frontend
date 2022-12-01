@@ -9,12 +9,13 @@ using System.Threading;
 using c_frontend;
 using c_frontend.Menu;
 using Newtonsoft.Json.Linq;
+using c_frontend.Controllers;
 
 namespace c_frontend
 {
   internal static class Client
   {
-    public static string configPath = "config.txt";
+    public static string configPath = "client.conn";
 
     /// <summary>
     /// Handles client server communications
@@ -27,6 +28,14 @@ namespace c_frontend
     private static string IP { get; set; }
     private static string PORT { get; set; }
 
+    public static CookieContainer cookies = new CookieContainer();
+
+
+    public static void Disconnect()
+		{
+      connected = false;
+      Menus.MainMenu();
+		}
 
     public static void Connect()
     {
@@ -133,6 +142,9 @@ namespace c_frontend
         for (int i = 0; i < headers.Count; i++)
           req.AddHeader(headers[i].name, headers[i].value);
 
+      //Adding access token to header
+      if (UserController.GetAccessToken() != null) req.AddHeader("Authorization", "Bearer "+UserController.GetAccessToken());
+
       //Adding Query Params
       if (queryParams != null)
         for (int i = 0; i < queryParams.Count; i++)
@@ -146,6 +158,8 @@ namespace c_frontend
       {
         RestResponse res = client.ExecuteAsync(req, token).Result;
         Debug.WriteLine($"{method.ToString().ToUpper()}: '{serverPath}' '{res.StatusCode.GetHashCode()}' {res.Content}");
+        if (res.Cookies.Count != 0) cookies.Add(res.Cookies);
+        Debug.WriteLine(cookies.ToString());
         return new FResponse(res.StatusCode.GetHashCode(), res.Content);
       }
       catch(Exception ex)
