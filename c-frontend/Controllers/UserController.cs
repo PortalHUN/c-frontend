@@ -26,9 +26,9 @@ namespace c_frontend.Controllers
       }
 
       UserSerializer json = JsonConvert.DeserializeObject<UserSerializer>(File.ReadAllText(userPath));
-      user.SetID(json.ID);
-      user.SetUsername(json.Username);
-      user.SetRefreshToken(json.RefreshToken);
+      user.ID = json.ID;
+      user.Username = json.Username;
+      user.RefreshToken = json.RefreshToken;
 
       Output.SpacedWrite("User loaded!");
       Thread.Sleep(1000);
@@ -48,6 +48,7 @@ namespace c_frontend.Controllers
 
     public static void Registration()
     {
+      Console.Clear();
       //Prompting for informations
       string Username = (Input.Username("Whats your Username?"));
       string Email = Input.Email("Whats your Email?");
@@ -60,14 +61,40 @@ namespace c_frontend.Controllers
       Debug.WriteLine($"Registration(): {res.content}");
       Thread.Sleep(1000);
       if (res.code == 200)
-        user.SetUsername(Username);
-      else
-        Registration();
+        user.Username = Username;
+			else
+			{
+        Debug.WriteLine($"{res.code}: {res.content}");
+        Output.SpacedWrite(res.content);
+        Thread.Sleep(1000);
+        Login();
+      }
+      Menus.MainMenu();
     }
 
     public static void Login()
 		{
-      return;
+      Console.Clear();
+      string Username = Input.Username("Whats your Username?");
+      string Password = Input.Password("Whats your Password?");
+
+      FResponse res = Client.Request("/auth/login", Method.Post, new { Username, Password });
+      Debug.WriteLine($"Login(): {res.content}");
+      if(res.code == 200)
+			{
+        //Implement ID
+        var json = JsonConvert.DeserializeObject(res.content);
+        user.Username = Username;
+        user.AccessToken = null;
+			}
+			else
+			{
+        Debug.WriteLine($"{res.code}: {res.content}");
+        Output.SpacedWrite(res.content);
+        Thread.Sleep(1000);
+        Login();
+			}
+      Menus.MainMenu();
 		}
 
     
