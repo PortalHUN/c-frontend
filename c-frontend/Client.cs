@@ -28,7 +28,7 @@ namespace c_frontend
     private static string IP { get; set; }
     private static string PORT { get; set; }
 
-    public static CookieContainer cookies = new CookieContainer();
+    public static Cookie cookie = new Cookie();
 
 
     public static void Disconnect()
@@ -137,6 +137,8 @@ namespace c_frontend
       RestRequest req = new RestRequest(serverPath, method);
       CancellationToken token;
 
+      
+
       //Adding headers to the request
       if(headers != null)
         for (int i = 0; i < headers.Count; i++)
@@ -154,12 +156,17 @@ namespace c_frontend
       if(payload != null)
         req.AddJsonBody(payload);
 
+      
+
       try
       {
         RestResponse res = client.ExecuteAsync(req, token).Result;
         Debug.WriteLine($"{method.ToString().ToUpper()}: '{serverPath}' '{res.StatusCode.GetHashCode()}' {res.Content}");
-        if (res.Cookies.Count != 0) cookies.Add(res.Cookies);
-        Debug.WriteLine(cookies.ToString());
+        if (res.Cookies.Count != 0)
+				{
+          if (res.Cookies[0].Name == "jwt") cookie = res.Cookies[0];
+          Debug.WriteLine(res.Cookies[0]); //Refresh Token
+        }
         return new FResponse(res.StatusCode.GetHashCode(), res.Content);
       }
       catch(Exception ex)
