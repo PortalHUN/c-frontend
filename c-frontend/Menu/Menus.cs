@@ -29,10 +29,6 @@ namespace c_frontend.Menu
       //Handle
       string chosen = Input.Choice(points);
       if (chosen == "Play") return;
-      else if (chosen == "Connect to a server") Client.Connect();
-      else if (chosen == "Register") UserController.Registration();
-      else if (chosen == "Login") UserController.Login();
-      else if (chosen == "Disconnect from the server") Client.Disconnect();
       else if (chosen == "Quit") Environment.Exit(0);
     }
   }
